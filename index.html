@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2b2f34">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hm Book">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Hm Book</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Customer installment, payment and profit manager">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+/* Concept: a private banker's ledger. Soft charcoal rail and hero, gold used only for marks of value (amounts, monogram, rules). Left rail + content on desktop, tab bar on phones. Contacts = list + detail pane. */
+:root{
+  --font-display:'Bodoni Moda','Didot','Bodoni 72',Georgia,serif;
+  --font-body:'Manrope','Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',sans-serif;
+  --bg:#e8e9eb; --surface:#ffffff; --surface2:#f1f2f3; --ink:#202427; --muted:#60676d; --line:#d8dbde;
+  --brand:#33383d; --on-brand:#f6f7f8; --brand-soft:#e4e6e8; --brand-ink:#2c3135;
+  --gold:#b08a38; --gold-ink:#7a5c15; --gold-soft:#f5edd7;
+  --good:#18794c; --good-soft:#d9f0e3; --warn:#9c5a0e; --warn-soft:#fbebd3; --bad:#c43a3a; --bad-soft:#f8e0e0;
+  --hero-a:#2b2f34; --hero-b:#4a5057; --hero-ink:#f2f3f4; --hero-muted:#b6bcc2; --hero-gold:#e3c570;
+  --rail:#2b2f34; --rail-ink:#e6e8ea; --rail-muted:#9ca3aa;
+  --av-bg-l:88%; --av-fg-l:26%;
+  --shadow:0 1px 2px rgba(20,24,28,.07),0 14px 34px rgba(20,24,28,.10);
+  --radius:16px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1d2024; --surface:#272b30; --surface2:#2f343a; --ink:#eceef0; --muted:#9ba3aa; --line:#3b4147;
+    --brand:#d6dade; --on-brand:#1d2024; --brand-soft:#363c42; --brand-ink:#e2e5e8;
+    --gold:#d2ae5c; --gold-ink:#dcbc70; --gold-soft:#2f2a1a;
+    --good:#5fcf9a; --good-soft:#1d3a2d; --warn:#e2a255; --warn-soft:#3a2c14; --bad:#f28b8b; --bad-soft:#412424;
+    --rail:#23272b; --av-bg-l:26%; --av-fg-l:82%;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 14px 34px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1d2024; --surface:#272b30; --surface2:#2f343a; --ink:#eceef0; --muted:#9ba3aa; --line:#3b4147;
+  --brand:#d6dade; --on-brand:#1d2024; --brand-soft:#363c42; --brand-ink:#e2e5e8;
+  --gold:#d2ae5c; --gold-ink:#dcbc70; --gold-soft:#2f2a1a;
+  --good:#5fcf9a; --good-soft:#1d3a2d; --warn:#e2a255; --warn-soft:#3a2c14; --bad:#f28b8b; --bad-soft:#412424;
+  --rail:#23272b; --av-bg-l:26%; --av-fg-l:82%;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 14px 34px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.45 var(--font-body);font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent}
+img{max-width:100%}
+[hidden]{display:none!important}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+h1,h2,h3,p,dl,dd{margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- shell ---------- */
+.shell{
+  min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:12px 96px;
+}
+.main{min-width:0;max-width:1080px;width:100%;margin-inline:auto}
+.rail{display:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 14px}
+.brandlock{display:flex;align-items:center;gap:11px;min-width:0}
+.mark{width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;background:linear-gradient(145deg,var(--hero-a),var(--hero-b));color:var(--hero-gold);font:700 17px/1 var(--font-display);letter-spacing:.5px;box-shadow:inset 0 0 0 1px rgba(227,197,112,.45)}
+.brandname{font:700 20px/1.1 var(--font-display)}
+.brandsub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+  padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;padding:6px 4px;border-radius:12px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em}
+.tab svg{width:22px;height:22px}
+.tab[aria-current="page"]{color:var(--brand-ink)}
+.tab[aria-current="page"] svg{stroke-width:2.4}
+.tab.add{color:var(--on-brand)}
+.tab.add span.pill{background:var(--brand);border-radius:14px;width:44px;height:30px;display:grid;place-items:center;margin-top:-2px}
+
+@media (min-width:900px){
+  .shell{grid-template-columns:240px minmax(0,1fr);column-gap:32px;padding-block:24px 40px}
+  .rail{display:flex;flex-direction:column;gap:6px;position:sticky;top:24px;align-self:start;height:calc(100vh - 48px);background:var(--rail);color:var(--rail-ink);border-radius:22px;padding:22px 16px;box-shadow:var(--shadow)}
+  .rail .brandname{color:var(--rail-ink)} .rail .brandsub{color:var(--rail-muted)}
+  .rail .brandlock{padding:2px 6px 20px;border-bottom:1px solid rgba(227,197,112,.25);margin-bottom:12px}
+  .navitem{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--rail-muted);padding:11px 12px;border-radius:12px;text-align:left;font-weight:700}
+  .navitem svg{width:20px;height:20px;flex:none}
+  .navitem:hover{background:rgba(255,255,255,.06);color:var(--rail-ink)}
+  .navitem[aria-current="page"]{background:rgba(227,197,112,.14);color:var(--hero-gold)}
+  .railfoot{margin-top:auto;display:grid;gap:10px}
+  .railnote{font-size:12px;line-height:1.5;color:var(--rail-muted);padding:0 6px}
+  .topbar,.tabbar{display:none}
+}
+
+/* ---------- buttons, chips ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:12px;padding:11px 16px;font-weight:700;font-size:14px;line-height:1.2;min-height:44px}
+.btn.primary{background:var(--brand);color:var(--on-brand)}
+.btn.soft{background:var(--brand-soft);color:var(--brand-ink)}
+.btn.ghost{background:var(--surface);border-color:var(--line);color:var(--brand-ink)}
+.btn.danger{background:var(--bad-soft);color:var(--bad)}
+.btn.small{min-height:38px;padding:8px 12px;font-size:13px}
+.btn svg{width:18px;height:18px;flex:none}
+.rail .btn.ghost{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:var(--rail-ink)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:30px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.gold{background:rgba(227,197,112,.16);color:var(--hero-gold);box-shadow:inset 0 0 0 1px rgba(227,197,112,.4)}
+.chip.neutral{background:var(--surface2);color:var(--muted)}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(140deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:22px;padding:22px 20px 18px;box-shadow:var(--shadow)}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--hero-muted);font-weight:700}
+.hero-amount{font:700 clamp(30px,8vw,46px)/1.1 var(--font-display);color:var(--hero-gold);margin-top:6px;overflow-wrap:anywhere}
+.hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(227,197,112,.3)}
+.hero-stats dt{font-size:11px;color:var(--hero-muted);letter-spacing:.04em}
+.hero-stats dd{font-weight:800;font-size:clamp(14px,3.6vw,18px);margin-top:4px;overflow-wrap:anywhere}
+
+.pagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:20px 0 12px}
+.pagehead h2{font:700 24px/1.15 var(--font-display)}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.toolrow{display:flex;gap:10px;flex-wrap:wrap}
+.toolrow .btn.primary{flex:1 1 100%}
+.toolrow .btn.ghost{flex:1 1 120px}
+@media (min-width:760px){.toolrow .btn.primary{flex:1 1 220px}}
+
+.searchbox{position:relative}
+.searchbox svg{position:absolute;left:14px;top:50%;translate:0 -50%;width:18px;height:18px;color:var(--muted);pointer-events:none}
+.search{width:100%;min-height:46px;padding:11px 14px 11px 42px;border:1px solid var(--line);border-radius:13px;background:var(--surface);outline:none}
+.search:focus{border-color:var(--brand)}
+
+/* ---------- avatars ---------- */
+.av{flex:none;display:grid;place-items:center;border-radius:50%;width:44px;height:44px;font-weight:800;font-size:15px;letter-spacing:.02em;background:hsl(var(--h) 34% var(--av-bg-l));color:hsl(var(--h) 48% var(--av-fg-l))}
+.av.lg{width:68px;height:68px;font-size:24px;font-family:var(--font-display)}
+
+/* ---------- home cards ---------- */
+.cards{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.chead{display:flex;gap:12px;align-items:center;min-width:0}
+.cid{min-width:0;flex:1}
+.linkname{border:0;background:none;padding:0;font-weight:800;font-size:16px;text-align:left;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.phone{color:var(--muted);font-size:12px;margin-top:2px}
+.remain{text-align:right;flex:none}
+.remain small{display:block;color:var(--muted);font-size:11px}
+.remain strong{font-size:17px;color:var(--brand-ink);font-weight:800}
+.remain strong.paid{color:var(--good)}
+.progress{height:6px;background:var(--surface2);border-radius:20px;overflow:hidden}
+.bar{height:100%;background:var(--brand);border-radius:20px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.fact{background:var(--surface2);border-radius:11px;padding:9px 10px;min-width:0}
+.fact small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:.02em}
+.fact b{display:block;font-size:13px;margin-top:3px;overflow-wrap:anywhere}
+.guarline{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);min-width:0;flex-wrap:wrap}
+.guarline b{color:var(--ink)}
+.cactions{display:flex;gap:8px}
+.cactions .btn{flex:1;min-height:40px;padding:8px 6px;font-size:13px}
+.empty{text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius);padding:34px 18px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);margin-bottom:6px;font-size:16px}
+
+/* ---------- contacts ---------- */
+.contacts{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);align-items:start}
+.listpane{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.listtools{padding:12px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.listscroll{overflow:auto;max-height:calc(100vh - 230px);min-height:120px}
+.letter{position:sticky;top:0;background:var(--surface2);color:var(--gold-ink);font:700 13px/1 var(--font-display);padding:7px 16px;letter-spacing:.08em;border-block:1px solid var(--line)}
+.row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:11px 16px}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--surface2)}
+.row[aria-current="true"]{background:var(--brand-soft)}
+.row .nm{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ph{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .amt{text-align:right;font-weight:800;font-size:13px}
+.row .amt small{display:block;font-weight:600;color:var(--muted);font-size:10.5px}
+.detailpane{min-width:0}
+.detailph{display:none;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius);padding:60px 20px}
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.dhead{display:flex;gap:16px;align-items:center;padding:20px;background:linear-gradient(140deg,var(--hero-a),var(--hero-b));color:var(--hero-ink)}
+.dhead h2{font:700 24px/1.15 var(--font-display);overflow-wrap:anywhere}
+.dhead .sub{color:var(--hero-muted);font-size:13px;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dhead .av.lg{background:rgba(227,197,112,.16);color:var(--hero-gold);box-shadow:inset 0 0 0 1px rgba(227,197,112,.45)}
+.backbtn{display:inline-flex;margin:0 0 10px;border:0;background:none;color:var(--brand-ink);font-weight:700;padding:6px 2px;align-items:center;gap:6px}
+.backbtn svg{width:18px;height:18px}
+.dbody{padding:18px 20px 22px;display:grid;gap:18px}
+.bal{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.bal .big{font:700 clamp(28px,7vw,38px)/1.1 var(--font-display);color:var(--brand-ink)}
+.bal .big.paid{color:var(--good)}
+.sect{display:grid;gap:10px}
+.sect h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-ink);font-weight:800}
+.facts.auto{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.guarcard{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface2)}
+.guarcard .who{display:flex;gap:12px;align-items:center;min-width:0}
+.guarcard b{display:block;overflow-wrap:anywhere}
+.numline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.numline a{color:var(--brand-ink);font-weight:700}
+.history{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.hrow{display:flex;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.hrow:last-child{border-bottom:0}
+.hrow b{white-space:nowrap}
+.dactions{display:flex;gap:10px;flex-wrap:wrap}
+.dactions .btn.primary{flex:1 1 180px}
+
+@media (min-width:900px){
+  .contacts{grid-template-columns:minmax(300px,380px) minmax(0,1fr)}
+  .detailph{display:block}
+  body[data-view="detail"] .detailph{display:none}
+  .backbtn{display:none}
+}
+@media (max-width:899.98px){
+  body[data-view="detail"] #contactsHead{display:none}
+  body[data-view="detail"] .listpane{display:none}
+  body[data-view="customers"] .detailpane{display:none}
+}
+
+/* ---------- modals ---------- */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,18,12,.62);display:none;align-items:flex-end;justify-content:center;padding:12px}
+.modal.show{display:flex}
+@media (min-width:600px){.modal{align-items:center}}
+.sheet{background:var(--surface);color:var(--ink);width:min(100%,560px);border-radius:22px;padding:22px 20px 20px;max-height:92vh;overflow:auto;box-shadow:var(--shadow);padding-bottom:max(20px,env(safe-area-inset-bottom,0px))}
+.sheet h3{font:700 22px/1.2 var(--font-display);margin-bottom:14px}
+.field{margin:12px 0}
+.field label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.field input{width:100%;min-height:46px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);outline:none}
+.field input:focus{border-color:var(--brand)}
+.field input:disabled{background:var(--surface2);color:var(--muted)}
+.field .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:440px){.two{grid-template-columns:minmax(0,1fr)}}
+.groupbox{border:1px solid var(--line);background:var(--surface2);border-radius:14px;padding:4px 14px 10px;margin:16px 0 4px}
+.groupbox h4{margin:12px 0 0;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-ink);font-weight:800}
+.groupbox .field input{background:var(--surface)}
+.calc{background:var(--surface2);border-radius:12px;padding:12px 14px;margin:12px 0;font-size:13px;line-height:1.8}
+.calc strong{color:var(--brand-ink)}
+.macts{display:flex;gap:10px;margin-top:16px}
+.macts .btn{flex:1}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));translate:-50% 0;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:30px;font-size:13px;font-weight:700;display:none;z-index:60;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{display:block}
+@media (min-width:900px){.toast{bottom:28px}}
+@media (prefers-reduced-motion:no-preference){
+  .detail,.ccard,.hero{animation:rise .28s ease both}
+  @keyframes rise{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
+/* ---------- month status dots, filters ---------- */
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none;vertical-align:middle}
+.dot.ok{background:var(--good);box-shadow:0 0 0 3px var(--good-soft)}
+.dot.no{background:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}
+.dot.na{background:var(--line)}
+.nm .dot{margin-right:9px}
+.mstat{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.monthtag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--gold-ink);margin-right:4px}
+.fbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:30px;padding:8px 14px;font-weight:700;font-size:13px;min-height:38px}
+.fbtn[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.mstrip{display:flex;gap:8px;flex-wrap:wrap}
+.mcell{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--surface2);border-radius:11px;padding:10px 12px;min-width:56px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></symbol>
+  </defs>
+</svg>
+
+<div class="shell">
+  <aside class="rail" aria-label="Main">
+    <div class="brandlock"><span class="mark">HM</span><div><div class="brandname">Hm Book</div><div class="brandsub">Installment ledger</div></div></div>
+    <button class="navitem" id="navHome" data-act="nav" data-view="home"><svg><use href="#i-home"/></svg>Home</button>
+    <button class="navitem" id="navCust" data-act="nav" data-view="customers"><svg><use href="#i-users"/></svg>Customers</button>
+    <div class="railfoot">
+      <button class="btn ghost installBtn" data-act="install" hidden><svg><use href="#i-down"/></svg>Install app</button>
+      <p class="railnote">Records are kept on this device only. Take a Backup regularly, and use Import to restore.</p>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="brandlock"><span class="mark">HM</span><div><div class="brandname">Hm Book</div><div class="brandsub">Installment ledger</div></div></div>
+      <button class="btn soft small installBtn" data-act="install" hidden><svg><use href="#i-down"/></svg>Install</button>
+    </header>
+
+    <!-- HOME -->
+    <section id="viewHome" aria-label="Home">
+      <div class="hero">
+        <div class="hero-top">
+          <div><p class="eyebrow">Total remaining</p><p class="hero-amount" id="sRemaining">Rs. 0</p></div>
+          <span class="chip gold">Profit rate 35%</span>
+        </div>
+        <dl class="hero-stats">
+          <div><dt>Customers</dt><dd id="sCustomers">0</dd></div>
+          <div><dt>Received</dt><dd id="sReceived">Rs. 0</dd></div>
+          <div><dt>Expected profit</dt><dd id="sProfit">Rs. 0</dd></div>
+        </dl>
+      </div>
+
+      <div class="pagehead"><h2>Ledger</h2><span class="muted small" id="homeCount"></span></div>
+      <div class="toolrow">
+        <button class="btn primary" data-act="add"><svg><use href="#i-plus"/></svg>Add customer</button>
+        <button class="btn ghost" data-act="backup"><svg><use href="#i-down"/></svg>Backup</button>
+        <button class="btn ghost" data-act="import"><svg><use href="#i-up"/></svg>Import</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div class="searchbox" style="margin:14px 0">
+        <svg><use href="#i-search"/></svg>
+        <label class="sr" for="qHome">Search customers</label>
+        <input class="search" id="qHome" type="search" placeholder="Search name, phone or zimawar" autocomplete="off">
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="cards" id="homeCards"></div>
+      <p class="muted small" style="margin-top:18px;line-height:1.6">Your records are saved in this browser on this device. Use Backup regularly to keep a copy. If you clear browser data or change phones, restore with Import.</p>
+    </section>
+
+    <!-- CUSTOMERS (contacts) -->
+    <section id="viewContacts" aria-label="Customers" hidden>
+      <div class="pagehead" id="contactsHead"><h2>Customers</h2><button class="btn primary small" data-act="add"><svg><use href="#i-plus"/></svg>Add</button></div>
+      <div class="contacts">
+        <div class="listpane">
+          <div class="listtools">
+            <div class="searchbox">
+              <svg><use href="#i-search"/></svg>
+              <label class="sr" for="qCont">Search contacts</label>
+              <input class="search" id="qCont" type="search" placeholder="Search customers" autocomplete="off">
+            </div>
+            <span class="muted small" id="contCount"></span>
+          </div>
+          <div class="listscroll" id="contList"></div>
+        </div>
+        <div class="detailpane">
+          <div class="detailph" id="detailPh"><b style="display:block;color:var(--ink);margin-bottom:6px;font-size:16px">No customer selected</b>Choose a name from the list to see the full record, zimawar details and payment history.</div>
+          <div id="detail"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<nav class="tabbar" aria-label="Main">
+  <button class="tab" id="tabHome" data-act="nav" data-view="home"><svg><use href="#i-home"/></svg>Home</button>
+  <button class="tab add" data-act="add" aria-label="Add customer"><span class="pill"><svg style="width:22px;height:22px"><use href="#i-plus"/></svg></span><span style="color:var(--muted)">Add</span></button>
+  <button class="tab" id="tabCust" data-act="nav" data-view="customers"><svg><use href="#i-users"/></svg>Customers</button>
+</nav>
+
+<!-- Add / edit customer -->
+<div class="modal" id="customerModal" role="dialog" aria-modal="true" aria-labelledby="customerTitle">
+  <div class="sheet">
+    <h3 id="customerTitle">Add customer</h3>
+    <form id="customerForm" novalidate>
+      <input type="hidden" id="editId">
+      <div class="field"><label for="name">Customer name *</label><input id="name" required maxlength="80" placeholder="Full name" autocomplete="off"></div>
+      <div class="field"><label for="phone">Customer phone</label><input id="phone" inputmode="tel" maxlength="30" placeholder="03xx xxxxxxx" autocomplete="off"></div>
+      <div class="two">
+        <div class="field"><label for="original">Original amount (Rs.) *</label><input id="original" type="number" inputmode="numeric" min="1" step="1" required placeholder="22000"></div>
+        <div class="field"><label for="monthly">Monthly installment (Rs.)</label><input id="monthly" type="number" inputmode="numeric" min="0" step="1" placeholder="3000"></div>
+      </div>
+      <div class="calc" id="calcBox"></div>
+      <div class="groupbox">
+        <h4>Zimawar 1 (required)</h4>
+        <div class="two">
+          <div class="field"><label for="gname">Name *</label><input id="gname" required maxlength="80" placeholder="Guarantor name" autocomplete="off"></div>
+          <div class="field"><label for="gphone">Phone *</label><input id="gphone" inputmode="tel" maxlength="30" placeholder="03xx xxxxxxx" autocomplete="off"></div>
+        </div>
+      </div>
+      <div class="groupbox">
+        <h4>Zimawar 2 (optional)</h4>
+        <div class="two">
+          <div class="field"><label for="gname2">Name</label><input id="gname2" maxlength="80" placeholder="Second guarantor name" autocomplete="off"></div>
+          <div class="field"><label for="gphone2">Phone</label><input id="gphone2" inputmode="tel" maxlength="30" placeholder="03xx xxxxxxx" autocomplete="off"></div>
+        </div>
+      </div>
+      <div class="macts">
+        <button type="button" class="btn ghost" data-act="closeModal" data-modal="customerModal">Cancel</button>
+        <button type="submit" class="btn primary">Save customer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Payment -->
+<div class="modal" id="paymentModal" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+  <div class="sheet">
+    <h3 id="payTitle">Record payment</h3>
+    <form id="paymentForm" novalidate>
+      <input type="hidden" id="paymentId">
+      <div class="field"><label for="paymentCustomer">Customer</label><input id="paymentCustomer" disabled></div>
+      <div class="two">
+        <div class="field"><label for="paymentAmount">Amount received (Rs.) *</label><input id="paymentAmount" type="number" inputmode="numeric" min="1" step="1" required></div>
+        <div class="field"><label for="paymentDate">Payment date</label><input id="paymentDate" type="date" required></div>
+      </div>
+      <div class="field"><label for="paymentNote">Note (optional)</label><input id="paymentNote" maxlength="120" placeholder="e.g. October installment" autocomplete="off"></div>
+      <div class="calc" id="paymentCalc"></div>
+      <div class="macts">
+        <button type="button" class="btn ghost" data-act="closeModal" data-modal="paymentModal">Cancel</button>
+        <button type="submit" class="btn primary">Save payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="cTitle">
+  <div class="sheet">
+    <h3 id="cTitle">Are you sure?</h3>
+    <p id="cMsg" class="muted" style="line-height:1.6"></p>
+    <div class="macts">
+      <button type="button" class="btn ghost" data-act="closeModal" data-modal="confirmModal">Cancel</button>
+      <button type="button" class="btn primary" id="cOk" data-act="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var KEY='customerInstallments35', RATE=0.35;
+function $(id){return document.getElementById(id)}
+
+/* ---------- data ---------- */
+function normalize(c){
+  if(!c||typeof c!=='object')return null;
+  return {
+    id:String(c.id||(Date.now()+''+Math.floor(Math.random()*1000))),
+    name:String(c.name||'Unnamed').slice(0,80),
+    phone:String(c.phone||'').slice(0,30),
+    original:Number(c.original)||0,
+    monthly:Number(c.monthly)||0,
+    guarantorName:String(c.guarantorName||'').slice(0,80),
+    guarantorPhone:String(c.guarantorPhone||'').slice(0,30),
+    guarantor2Name:String(c.guarantor2Name||'').slice(0,80),
+    guarantor2Phone:String(c.guarantor2Phone||'').slice(0,30),
+    payments:(Array.isArray(c.payments)?c.payments:[]).map(function(p){return {amount:Number(p&&p.amount)||0,date:String((p&&p.date)||''),note:String((p&&p.note)||'').slice(0,120)}}).filter(function(p){return p.amount>0})
+  };
+}
+function load(){
+  try{var d=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(d)?d.map(normalize).filter(Boolean):[]}catch(e){return []}
+}
+var customers=load(), filter='all', selectedId=null, view='home', deferredPrompt=null, confirmResolve=null;
+function persist(){
+  try{localStorage.setItem(KEY,JSON.stringify(customers))}catch(e){toast('Could not save on this device')}
+  renderAll();
+}
+function find(id){for(var i=0;i<customers.length;i++)if(customers[i].id===id)return customers[i];return null}
+function money(n){return 'Rs. '+Math.round(Number(n)||0).toLocaleString('en-PK')}
+function total(c){return Math.round(c.original*1.35)}
+function paid(c){return c.payments.reduce(function(s,p){return s+p.amount},0)}
+function remaining(c){return Math.max(0,total(c)-paid(c))}
+function hasGuarantor(c){return !!(c.guarantorName&&c.guarantorPhone)}
+function has2(c){return !!(c.guarantor2Name||c.guarantor2Phone)}
+function pad2(n){return String(n).padStart(2,'0')}
+function nowKey(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)}
+function keyMonthName(k){var p=k.split('-');return new Date(Number(p[0]),Number(p[1])-1,1).toLocaleDateString('en-GB',{month:'short'})}
+function paidIn(c,k){return c.payments.some(function(p){return p.date&&p.date.slice(0,7)===k})}
+function isDone(c){return total(c)>0&&remaining(c)<=0}
+function mstate(c){return isDone(c)?'done':(paidIn(c,nowKey())?'ok':'no')}
+function statusHtml(c){
+  var s=mstate(c),m=keyMonthName(nowKey());
+  if(s==='done')return '<span class="mstat"><span class="dot ok"></span>Fully paid</span>';
+  return s==='ok'?'<span class="mstat"><span class="dot ok"></span>'+m+': Paid</span>':'<span class="mstat"><span class="dot no"></span>'+m+': Not paid</span>';
+}
+function monthStrip(c){
+  var cur=nowKey(),start=cur,keys=[],last='';
+  c.payments.forEach(function(p){var k=(p.date||'').slice(0,7);if(/^\d{4}-\d{2}$/.test(k)){if(k<start)start=k;if(k>last)last=k}});
+  var n=Number(c.id);if(n>1e12&&n<4e12){var d=new Date(n),k2=d.getFullYear()+'-'+pad2(d.getMonth()+1);if(k2<start)start=k2}
+  var y=Number(cur.slice(0,4)),m=Number(cur.slice(5,7));
+  for(var i=0;i<6;i++){var k=y+'-'+pad2(m);if(k<start)break;keys.unshift(k);m--;if(m<1){m=12;y--}}
+  var done=isDone(c);
+  return '<div class="mstrip">'+keys.map(function(k){
+    var cls=paidIn(c,k)?'ok':((done&&k>last)?'na':'no');
+    return '<div class="mcell"><span class="dot '+cls+'"></span><span>'+keyMonthName(k)+'</span></div>';
+  }).join('')+'</div><p class="muted small">Green dot: a payment was recorded in that month. Red dot: nothing was received that month.</p>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+function fmtDate(s){if(!s)return '';var d=new Date(s+'T00:00:00');return isNaN(d)?s:d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
+function addedOn(c){var n=Number(c.id);return(n>1e12&&n<4e12)?new Date(n).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}
+function telHref(p){return 'tel:'+String(p).replace(/[^0-9+]/g,'')}
+function initials(n){var w=n.trim().split(/\s+/).filter(Boolean);if(!w.length)return '?';var a=Array.from(w[0])[0]||'';var b=w[1]?(Array.from(w[1])[0]||''):'';return (a+b).toUpperCase()}
+function hue(n){var h=0;Array.from(n).forEach(function(ch){h=(h*31+ch.codePointAt(0))%360});return h}
+function avatar(n,cls){return '<span class="av '+(cls||'')+'" style="--h:'+hue(n)+'" aria-hidden="true">'+esc(initials(n))+'</span>'}
+function letterOf(n){var ch=(Array.from(n.trim())[0]||'#').toUpperCase();return /\p{L}/u.test(ch)?ch:'#'}
+
+/* ---------- toast / modals ---------- */
+var toastTimer=null;
+function toast(s){var t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show')},2400)}
+function openModal(id,focusId){$(id).classList.add('show');var f=focusId&&$(focusId);if(f)setTimeout(function(){f.focus()},30)}
+function closeModal(id){
+  $(id).classList.remove('show');
+  if(id==='confirmModal'&&confirmResolve){var r=confirmResolve;confirmResolve=null;r(false)}
+}
+function askConfirm(title,msg,ok,danger){
+  return new Promise(function(res){
+    confirmResolve=res;$('cTitle').textContent=title;$('cMsg').textContent=msg;
+    var b=$('cOk');b.textContent=ok||'Confirm';b.className='btn '+(danger?'danger':'primary');
+    openModal('confirmModal');
+  });
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){['customerModal','paymentModal','confirmModal'].forEach(function(id){if($(id).classList.contains('show'))closeModal(id)})}});
+['customerModal','paymentModal','confirmModal'].forEach(function(id){$(id).addEventListener('mousedown',function(e){if(e.target===$(id))closeModal(id)})});
+
+/* ---------- routing ---------- */
+function route(){
+  var h=location.hash.replace('#','');
+  view=h==='customers'?'customers':(h==='detail'&&find(selectedId)?'detail':(h==='detail'?'customers':'home'));
+  document.body.setAttribute('data-view',view);
+  $('viewHome').hidden=view!=='home';
+  $('viewContacts').hidden=view==='home';
+  var onCust=view!=='home';
+  [['navHome','tabHome',!onCust],['navCust','tabCust',onCust]].forEach(function(x){
+    [$(x[0]),$(x[1])].forEach(function(el){if(x[2])el.setAttribute('aria-current','page');else el.removeAttribute('aria-current')});
+  });
+  renderContacts();
+  window.scrollTo(0,0);
+}
+function go(v){if(location.hash==='#'+v)route();else location.hash=v}
+window.addEventListener('hashchange',route);
+
+/* ---------- render ---------- */
+function renderStats(){
+  var rec=0,rem=0,profit=0;
+  customers.forEach(function(c){rec+=paid(c);rem+=remaining(c);profit+=c.original*RATE});
+  $('sCustomers').textContent=customers.length;
+  $('sRemaining').textContent=money(rem);
+  $('sReceived').textContent=money(rec);
+  $('sProfit').textContent=money(profit);
+}
+function guarLine(c){
+  if(!hasGuarantor(c))return '<div class="guarline"><span class="chip warn">Zimawar missing</span><span>Edit to add name and phone</span></div>';
+  return '<div class="guarline"><span>Zimawar</span><b>'+esc(c.guarantorName)+'</b><span>'+esc(c.guarantorPhone)+'</span>'+(has2(c)?'<span class="chip neutral">+1 more</span>':'')+'</div>';
+}
+function renderHome(){
+  var q=$('qHome').value.trim().toLowerCase();
+  var nNo=0,nOk=0;customers.forEach(function(c){if(mstate(c)==='no')nNo++;else nOk++});
+  $('filters').innerHTML='<span class="monthtag">'+esc(new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'}))+'</span>'+
+    '<button class="fbtn" data-act="filter" data-f="all" aria-pressed="'+(filter==='all')+'">All '+customers.length+'</button>'+
+    '<button class="fbtn" data-act="filter" data-f="no" aria-pressed="'+(filter==='no')+'"><span class="dot no"></span>Not paid '+nNo+'</button>'+
+    '<button class="fbtn" data-act="filter" data-f="ok" aria-pressed="'+(filter==='ok')+'"><span class="dot ok"></span>Paid '+nOk+'</button>';
+  var list=customers.filter(function(c){
+    if(filter==='no'&&mstate(c)!=='no')return false;
+    if(filter==='ok'&&mstate(c)==='no')return false;
+    return (c.name+' '+c.phone+' '+c.guarantorName+' '+c.guarantorPhone+' '+c.guarantor2Name+' '+c.guarantor2Phone).toLowerCase().indexOf(q)>-1;
+  });
+  $('homeCount').textContent=list.length+(list.length===1?' record':' records');
+  var box=$('homeCards');
+  if(!list.length){
+    var allPaid=customers.length&&filter==='no'&&!q;
+    box.innerHTML='<div class="empty" style="grid-column:1/-1"><b>'+(allPaid?'Nobody is pending':customers.length?'No match found':'No customers yet')+'</b>'+(allPaid?'Every customer has paid this month.':customers.length?'Try a different name or number.':'Add your first customer to start tracking installments.')+'</div>';
+    return;
+  }
+  box.innerHTML=list.map(function(c){
+    var t=total(c),p=paid(c),r=remaining(c),pct=t?Math.min(100,p/t*100):0,done=t>0&&r<=0;
+    return '<article class="ccard">'+
+      '<div class="chead">'+avatar(c.name)+'<div class="cid"><button class="linkname" data-act="open" data-id="'+esc(c.id)+'">'+esc(c.name)+'</button><div class="phone">'+esc(c.phone||'No phone number')+'</div><div style="margin-top:6px">'+statusHtml(c)+'</div></div>'+
+      '<div class="remain"><small>'+(done?'Status':'Remaining')+'</small><strong class="'+(done?'paid':'')+'">'+(done?'Paid up':money(r))+'</strong></div></div>'+
+      '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct.toFixed(0)+'"><div class="bar" style="width:'+pct+'%"></div></div>'+
+      '<div class="facts">'+
+        '<div class="fact"><small>Original</small><b>'+money(c.original)+'</b></div>'+
+        '<div class="fact"><small>35% profit</small><b>'+money(c.original*RATE)+'</b></div>'+
+        '<div class="fact"><small>Total payable</small><b>'+money(t)+'</b></div>'+
+        '<div class="fact"><small>Received</small><b>'+money(p)+'</b></div>'+
+        '<div class="fact"><small>Monthly</small><b>'+money(c.monthly)+'</b></div>'+
+        '<div class="fact"><small>Paid</small><b>'+pct.toFixed(0)+'%</b></div>'+
+      '</div>'+guarLine(c)+
+      '<div class="cactions"><button class="btn soft" data-act="pay" data-id="'+esc(c.id)+'">Add payment</button><button class="btn ghost" data-act="open" data-id="'+esc(c.id)+'">View</button><button class="btn ghost" data-act="edit" data-id="'+esc(c.id)+'">Edit</button></div>'+
+    '</article>';
+  }).join('');
+}
+function renderContacts(){
+  var q=$('qCont').value.trim().toLowerCase();
+  var list=customers.filter(function(c){return (c.name+' '+c.phone+' '+c.guarantorName).toLowerCase().indexOf(q)>-1})
+    .sort(function(a,b){var la=letterOf(a.name),lb=letterOf(b.name);if(la==='#'&&lb!=='#')return 1;if(lb==='#'&&la!=='#')return -1;return a.name.localeCompare(b.name,undefined,{sensitivity:'base'})});
+  $('contCount').textContent=customers.length+(customers.length===1?' customer':' customers')+(q?' · '+list.length+' shown':'');
+  var box=$('contList');
+  if(!list.length){box.innerHTML='<div class="empty" style="border:0"><b>'+(customers.length?'No match found':'No customers yet')+'</b>'+(customers.length?'Try a different name or number.':'Tap Add to create the first one.')+'</div>';renderDetail();return}
+  var html='',cur='';
+  list.forEach(function(c){
+    var L=letterOf(c.name);
+    if(L!==cur){cur=L;html+='<div class="letter">'+esc(L)+'</div>'}
+    var r=remaining(c),done=total(c)>0&&r<=0,s=mstate(c);
+    html+='<button class="row" data-act="open" data-id="'+esc(c.id)+'"'+(view==='detail'&&c.id===selectedId?' aria-current="true"':'')+'>'+avatar(c.name)+
+      '<span style="min-width:0"><div class="nm"><span class="dot '+(s==='no'?'no':'ok')+'"></span>'+esc(c.name)+'</div><div class="ph">'+esc(c.phone||'No phone number')+'</div></span>'+
+      '<span class="amt">'+(done?'<span class="chip good">Paid</span>':money(r)+'<small>remaining</small>')+'</span></button>';
+  });
+  box.innerHTML=html;
+  renderDetail();
+}
+function phoneLine(p){
+  if(!p)return '<span class="muted">No phone number</span>';
+  return '<span class="numline"><b>'+esc(p)+'</b><button class="btn ghost small" data-act="copy" data-text="'+esc(p)+'">Copy</button><a href="'+esc(telHref(p))+'">Call</a></span>';
+}
+function guarCard(name,phone,who,label){
+  return '<div class="guarcard"><div class="who">'+avatar(name)+'<div style="min-width:0"><b>'+esc(name)+'</b><span class="muted small">'+label+' for '+esc(who)+'</span></div></div>'+phoneLine(phone)+'</div>';
+}
+function guarSect(c){
+  var h='<div class="sect"><h3>Zimawar (guarantor)</h3>';
+  if(hasGuarantor(c))h+=guarCard(c.guarantorName,c.guarantorPhone,c.name,'Zimawar 1');
+  else h+='<div class="guarcard"><div><b>Not added yet</b><span class="muted small">Every customer needs a zimawar name and phone number.</span></div><button class="btn soft small" data-act="edit" data-id="'+esc(c.id)+'">Add zimawar</button></div>';
+  if(has2(c))h+=guarCard(c.guarantor2Name||'Unnamed',c.guarantor2Phone,c.name,'Zimawar 2');
+  return h+'</div>';
+}
+function renderDetail(){
+  var box=$('detail'),c=find(selectedId);
+  if(!c){box.innerHTML='';return}
+  var t=total(c),p=paid(c),r=remaining(c),pct=t?Math.min(100,p/t*100):0,done=t>0&&r<=0;
+  var left=(c.monthly>0&&r>0)?Math.ceil(r/c.monthly)+(Math.ceil(r/c.monthly)===1?' installment':' installments'):'None';
+  var added=addedOn(c);
+  var rows=c.payments.slice().reverse().map(function(x){return '<div class="hrow"><div><b style="white-space:normal">'+esc(fmtDate(x.date)||'No date')+'</b><div class="muted small">'+esc(x.note||'Payment')+'</div></div><b>'+money(x.amount)+'</b></div>'}).join('');
+  box.innerHTML=
+    '<button class="backbtn" data-act="back"><svg width="18" height="18"><use href="#i-back"/></svg>Customers</button>'+
+    '<article class="detail">'+
+      '<div class="dhead">'+avatar(c.name,'lg')+'<div style="min-width:0"><h2>'+esc(c.name)+'</h2><div class="sub">'+
+        (done?'<span class="chip good">Paid up</span>':'<span class="chip gold">Active</span>')+
+        (hasGuarantor(c)?'':'<span class="chip warn">Zimawar missing</span>')+
+        statusHtml(c)+(added?'<span>Added '+esc(added)+'</span>':'')+'</div></div></div>'+
+      '<div class="dbody">'+
+        '<div class="bal"><div><p class="eyebrow" style="color:var(--muted)">Remaining</p><p class="big '+(done?'paid':'')+'">'+money(r)+'</p></div><div class="muted small" style="text-align:right">'+pct.toFixed(0)+'% of '+money(t)+' paid</div></div>'+
+        '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct.toFixed(0)+'"><div class="bar" style="width:'+pct+'%"></div></div>'+
+        '<div class="sect"><h3>Monthly status</h3>'+monthStrip(c)+'</div>'+
+        '<div class="sect"><h3>Account</h3><div class="facts auto">'+
+          '<div class="fact"><small>Original amount</small><b>'+money(c.original)+'</b></div>'+
+          '<div class="fact"><small>35% profit</small><b>'+money(c.original*RATE)+'</b></div>'+
+          '<div class="fact"><small>Total payable</small><b>'+money(t)+'</b></div>'+
+          '<div class="fact"><small>Received</small><b>'+money(p)+'</b></div>'+
+          '<div class="fact"><small>Monthly installment</small><b>'+money(c.monthly)+'</b></div>'+
+          '<div class="fact"><small>Installments left</small><b>'+left+'</b></div>'+
+        '</div></div>'+
+        '<div class="sect"><h3>Customer contact</h3><div>'+phoneLine(c.phone)+'</div></div>'+
+        guarSect(c)+
+        '<div class="sect"><h3>Payment history · '+c.payments.length+'</h3>'+(rows?'<div class="history">'+rows+'</div>':'<div class="empty">No payments recorded yet.</div>')+'</div>'+
+        '<div class="dactions"><button class="btn primary" data-act="pay" data-id="'+esc(c.id)+'"><svg><use href="#i-plus"/></svg>Add payment</button><button class="btn ghost" data-act="edit" data-id="'+esc(c.id)+'">Edit</button><button class="btn danger" data-act="del" data-id="'+esc(c.id)+'">Delete</button></div>'+
+      '</div>'+
+    '</article>';
+}
+function renderAll(){renderStats();renderHome();renderContacts()}
+
+/* ---------- customer form ---------- */
+function updateCalc(){
+  var v=Number($('original').value)||0;
+  $('calcBox').innerHTML='35% profit: <strong>'+money(v*RATE)+'</strong><br>Total payable: <strong>'+money(v*1.35)+'</strong>';
+}
+function openAdd(){
+  $('customerForm').reset();$('editId').value='';$('customerTitle').textContent='Add customer';updateCalc();openModal('customerModal','name');
+}
+function openEdit(id){
+  var c=find(id);if(!c)return;
+  $('editId').value=id;$('name').value=c.name;$('phone').value=c.phone;$('original').value=c.original||'';$('monthly').value=c.monthly||'';
+  $('gname').value=c.guarantorName;$('gphone').value=c.guarantorPhone;$('gname2').value=c.guarantor2Name;$('gphone2').value=c.guarantor2Phone;
+  $('customerTitle').textContent='Edit customer';updateCalc();openModal('customerModal',hasGuarantor(c)?'name':'gname');
+}
+var PHONE_RE=/^[0-9+\-\s()]{7,20}$/;
+function saveCustomer(e){
+  e.preventDefault();
+  var id=$('editId').value;
+  var obj={name:$('name').value.trim(),phone:$('phone').value.trim(),original:Number($('original').value),monthly:Number($('monthly').value)||0,guarantorName:$('gname').value.trim(),guarantorPhone:$('gphone').value.trim(),guarantor2Name:$('gname2').value.trim(),guarantor2Phone:$('gphone2').value.trim()};
+  if(!obj.name){toast('Enter the customer name');$('name').focus();return}
+  if(obj.phone&&!PHONE_RE.test(obj.phone)){toast('Customer phone number looks wrong');$('phone').focus();return}
+  if(!(obj.original>0)){toast('Enter the original amount');$('original').focus();return}
+  if(!obj.guarantorName){toast('Zimawar name is required');$('gname').focus();return}
+  if(!PHONE_RE.test(obj.guarantorPhone)){toast('Enter a valid zimawar phone number');$('gphone').focus();return}
+  if(obj.guarantor2Name||obj.guarantor2Phone){
+    if(!obj.guarantor2Name){toast('Enter the second zimawar name');$('gname2').focus();return}
+    if(!PHONE_RE.test(obj.guarantor2Phone)){toast('Enter a valid second zimawar phone number');$('gphone2').focus();return}
+  }
+  var c;
+  if(id){c=find(id);if(!c)return;Object.assign(c,obj)}
+  else{c=Object.assign({id:String(Date.now()),payments:[]},obj);customers.unshift(c)}
+  persist();closeModal('customerModal');toast(id?'Customer updated':'Customer added');
+}
+
+/* ---------- payments ---------- */
+function openPay(id){
+  var c=find(id);if(!c)return;
+  var r=remaining(c);
+  if(r<=0){toast('This customer has no remaining balance');return}
+  $('paymentId').value=id;$('paymentCustomer').value=c.name;
+  $('paymentAmount').value=c.monthly>0?Math.min(c.monthly,r):'';$('paymentAmount').max=r;
+  var d=new Date();$('paymentDate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  $('paymentNote').value='';$('paymentCalc').textContent='Current remaining: '+money(r);
+  openModal('paymentModal','paymentAmount');
+}
+function savePayment(e){
+  e.preventDefault();
+  var c=find($('paymentId').value),amount=Number($('paymentAmount').value);
+  if(!c)return;
+  if(!(amount>0)){toast('Enter the amount received');return}
+  if(amount>remaining(c)){toast('Payment is more than the remaining balance');return}
+  c.payments.push({amount:amount,date:$('paymentDate').value,note:$('paymentNote').value.trim()});
+  persist();closeModal('paymentModal');toast('Payment saved');
+}
+
+/* ---------- backup / import ---------- */
+function stamp(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+async function exportData(){
+  var data=JSON.stringify(customers,null,2),name='hm-book-backup-'+stamp()+'.json';
+  try{
+    if(window.AndroidBridge&&window.AndroidBridge.saveFile){window.AndroidBridge.saveFile(name,data);return}
+    if(window.claude&&window.claude.use){
+      var dl=await window.claude.use('downloads');
+      if(dl){await dl.save({filename:name,data:data});toast('Backup ready');return}
+    }
+  }catch(err){if(err&&err.code==='declined')return}
+  try{
+    var blob=new Blob([data],{type:'application/json'}),a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href)},4000);toast('Backup downloaded');
+  }catch(err2){toast('Backup is not available here')}
+}
+function importData(e){
+  var f=e.target.files&&e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    var d;
+    try{d=JSON.parse(r.result);if(!Array.isArray(d))throw 0}catch(x){toast('This is not a valid backup file');return}
+    var list=d.map(normalize).filter(Boolean);
+    askConfirm('Import backup?','This replaces the current list with '+list.length+(list.length===1?' customer':' customers')+' from the file.','Replace list',true).then(function(ok){
+      if(!ok)return;customers=list;selectedId=null;persist();go('home');toast('Backup imported');
+    });
+  };
+  r.readAsText(f);e.target.value='';
+}
+
+/* ---------- copy / install ---------- */
+function fallbackCopy(t){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copied')}catch(e){toast(t)}ta.remove()}
+function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('Copied')},function(){fallbackCopy(t)})}else fallbackCopy(t)}
+function showInstall(on){Array.prototype.forEach.call(document.querySelectorAll('.installBtn'),function(b){b.hidden=!on})}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;showInstall(true)});
+window.addEventListener('appinstalled',function(){deferredPrompt=null;showInstall(false);toast('Hm Book installed')});
+function install(){if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;showInstall(false)})}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]');if(!el)return;
+  var act=el.getAttribute('data-act'),id=el.getAttribute('data-id');
+  if(act==='nav')go(el.getAttribute('data-view'));
+  else if(act==='add')openAdd();
+  else if(act==='backup')exportData();
+  else if(act==='import')$('importFile').click();
+  else if(act==='open'){if(find(id)){selectedId=id;go('detail')}}
+  else if(act==='filter'){filter=el.getAttribute('data-f');renderHome()}
+  else if(act==='back')go('customers');
+  else if(act==='pay')openPay(id);
+  else if(act==='edit')openEdit(id);
+  else if(act==='copy')copyText(el.getAttribute('data-text'));
+  else if(act==='install')install();
+  else if(act==='closeModal')closeModal(el.getAttribute('data-modal'));
+  else if(act==='confirmOk'){var r=confirmResolve;confirmResolve=null;closeModal('confirmModal');if(r)r(true)}
+  else if(act==='del'){
+    var c=find(id);if(!c)return;
+    askConfirm('Delete '+c.name+'?','This removes the customer and all '+c.payments.length+' recorded payments. Take a Backup first if you may need them.','Delete customer',true).then(function(ok){
+      if(!ok)return;customers=customers.filter(function(x){return x.id!==id});selectedId=null;persist();go('customers');toast('Customer deleted');
+    });
+  }
+});
+$('customerForm').addEventListener('submit',saveCustomer);
+$('paymentForm').addEventListener('submit',savePayment);
+$('original').addEventListener('input',updateCalc);
+$('importFile').addEventListener('change',importData);
+$('qHome').addEventListener('input',renderHome);
+$('qCont').addEventListener('input',renderContacts);
+
+if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)showInstall(false);
+renderAll();route();
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){})})}
+})();
+</script>
+
+</body>
+</html>
